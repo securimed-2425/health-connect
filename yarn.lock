@@ -3013,6 +3013,7 @@ __metadata:
     prettier: 2.8.8
     react: 18.2.0
     react-native: 0.74.1
+    react-native-health-connect: ^2.0.2
     react-test-renderer: 18.2.0
     typescript: 5.0.4
   languageName: unknown
@@ -7947,6 +7948,17 @@ __metadata:
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
+  languageName: node
+  linkType: hard
+
+"react-native-health-connect@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "react-native-health-connect@npm:2.0.2"
+  peerDependencies:
+    "@expo/config-plugins": ">= 6.0.2"
+    react: "*"
+    react-native: "*"
+  checksum: 6b6142daf696dd5e63e2146494462d87eea8e581bf539a283bd8fdfa3136728fe7cc54f4b8e624ea8d7cff25f6057f880d000cdaab65c169a0098f096c5a9813
   languageName: node
   linkType: hard
 

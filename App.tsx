@@ -1,118 +1,159 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import * as React from 'react';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import { Button, StyleSheet, View } from 'react-native';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+  aggregateRecord,
+  getGrantedPermissions,
+  initialize,
+  insertRecords,
+  getSdkStatus,
+  readRecords,
+  requestPermission,
+  revokeAllPermissions,
+  SdkAvailabilityStatus,
+  openHealthConnectSettings,
+  openHealthConnectDataManagement,
+  readRecord,
+} from 'react-native-health-connect';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const getLastWeekDate = (): Date => {
+  return new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
+};
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const getLastTwoWeeksDate = (): Date => {
+  return new Date(new Date().getTime() - 2 * 7 * 24 * 60 * 60 * 1000);
+};
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+const getTodayDate = (): Date => {
+  return new Date();
+};
+
+export default function App() {
+  const initializeHealthConnect = async () => {
+    const result = await initialize();
+    console.log({ result });
+  };
+
+  const checkAvailability = async () => {
+    const status = await getSdkStatus();
+    if (status === SdkAvailabilityStatus.SDK_AVAILABLE) {
+      console.log('SDK is available');
+    }
+
+    if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE) {
+      console.log('SDK is not available');
+    }
+
+    if (
+      status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
+    ) {
+      console.log('SDK is not available, provider update required');
+    }
+  };
+
+  const insertSampleData = () => {
+    insertRecords([
+      {
+        recordType: 'Steps',
+        count: 1000,
+        startTime: getLastWeekDate().toISOString(),
+        endTime: getTodayDate().toISOString(),
+      },
+    ]).then((ids) => {
+      console.log('Records inserted ', { ids });
+    });
+  };
+
+  const readSampleData = () => {
+    readRecords('Steps', {
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: getLastTwoWeeksDate().toISOString(),
+        endTime: getTodayDate().toISOString(),
+      },
+    }).then((result) => {
+      console.log('Retrieved records: ', JSON.stringify({ result }, null, 2));
+    });
+  };
+
+  const readSampleDataSingle = () => {
+    readRecord('Steps', 'a7bdea65-86ce-4eb2-a9ef-a87e6a7d9df2').then(
+      (result) => {
+        console.log('Retrieved record: ', JSON.stringify({ result }, null, 2));
+      }
+    );
+  };
+
+  const aggregateSampleData = () => {
+    aggregateRecord({
+      recordType: 'Steps',
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: getLastWeekDate().toISOString(),
+        endTime: getTodayDate().toISOString(),
+      },
+    }).then((result) => {
+      console.log('Aggregated record: ', { result });
+    });
+  };
+
+  const requestSamplePermissions = () => {
+    requestPermission([
+      {
+        accessType: 'read',
+        recordType: 'Steps',
+      },
+      {
+        accessType: 'write',
+        recordType: 'Steps',
+      },
+    ]).then((permissions) => {
+      console.log('Granted permissions on request ', { permissions });
+    });
+  };
+
+  const grantedPermissions = () => {
+    getGrantedPermissions().then((permissions) => {
+      console.log('Granted permissions ', { permissions });
+    });
+  };
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.container}>
+      <Button title="Initialize" onPress={initializeHealthConnect} />
+      <Button
+        title="Open Health Connect settings"
+        onPress={openHealthConnectSettings}
+      />
+      <Button
+        title="Open Health Connect data management"
+        onPress={() => openHealthConnectDataManagement()}
+      />
+      <Button title="Check availability" onPress={checkAvailability} />
+      <Button
+        title="Request sample permissions"
+        onPress={requestSamplePermissions}
+      />
+      <Button title="Get granted permissions" onPress={grantedPermissions} />
+      <Button title="Revoke all permissions" onPress={revokeAllPermissions} />
+      <Button title="Insert sample data" onPress={insertSampleData} />
+      <Button title="Read sample data" onPress={readSampleData} />
+      <Button title="Read specific data" onPress={readSampleDataSingle} />
+      <Button title="Aggregate sample data" onPress={aggregateSampleData} />
     </View>
   );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    rowGap: 16,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  box: {
+    width: 60,
+    height: 60,
+    marginVertical: 20,
   },
 });
-
-export default App;
