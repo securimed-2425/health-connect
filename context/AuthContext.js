@@ -1,6 +1,5 @@
 import React, {useRef, createContext, useContext, useState} from 'react';
 
-import PolyfillCrypto from 'react-native-webview-crypto';
 import 'react-native-get-random-values';
 import 'gun/lib/mobile';
 import 'gun/lib/mobile';
@@ -35,7 +34,7 @@ export const AuthContextProvider = ({children}) => {
         if (ret.err) {
           resolve(false);
         } else {
-        //   console.log('ret', ret);
+          //   console.log('ret', ret);
           resolve(true);
         }
       });
@@ -53,21 +52,21 @@ export const AuthContextProvider = ({children}) => {
     });
   });
 
-//   const signUp = async (username, password) => {
-//     return new Promise((resolve, reject) => {
-//       user.create(username, password, ret => {
-//         // console.log('ret', ret);
-//         if (ret.err) {
-//           resolve(false);
-//         } else {
-//           resolve(true);
-//         }
-//       });
-//     });
-//   };
+  //   const signUp = async (username, password) => {
+  //     return new Promise((resolve, reject) => {
+  //       user.create(username, password, ret => {
+  //         // console.log('ret', ret);
+  //         if (ret.err) {
+  //           resolve(false);
+  //         } else {
+  //           resolve(true);
+  //         }
+  //       });
+  //     });
+  //   };
 
   return (
-    <AuthContext.Provider value={{signIn, logOut, signUp, userInfo, user, db}}>
+    <AuthContext.Provider value={{signIn, logOut, userInfo, user, db}}>
       {children}
     </AuthContext.Provider>
   );

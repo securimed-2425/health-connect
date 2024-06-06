@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React from 'react';
 import {
   View,
   Pressable,
@@ -14,19 +14,15 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {StyleSheet} from 'react-native';
 import {styles} from './styles';
 import {UserAuth} from '../../context/AuthContext';
-import PolyfillCrypto from 'react-native-webview-crypto';
 import 'react-native-get-random-values';
 import 'gun/lib/mobile';
-import Gun from 'gun';
 import 'gun/sea';
 import 'gun/lib/radix.js';
 import 'gun/lib/radisk.js';
 import 'gun/lib/store.js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import asyncStore from 'gun/lib/ras.js';
 
 export const HomeScreen = ({navigation}) => {
-  const {signUp, signIn} = UserAuth();
+  const {signIn} = UserAuth();
 
   const insets = useSafeAreaInsets();
 
