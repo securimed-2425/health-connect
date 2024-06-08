@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {HomeScreen, ProfileScreen} from './screens/login/index';
-import Main from './screens/records';
+import {HomeScreen} from './screens/login/index';
+import Record from './screens/records/index';
 import {AuthContextProvider} from './context/AuthContext';
 
 import PolyfillCrypto from 'react-native-webview-crypto';
@@ -24,13 +24,8 @@ const App = () => {
               options={{headerShown: false}}
             />
             <Stack.Screen
-              name="Profile"
-              component={ProfileScreen}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
               name="Health Connect"
-              component={Main}
+              component={Record}
               options={{headerShown: false}}
             />
           </Stack.Navigator>

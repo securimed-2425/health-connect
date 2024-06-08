@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import {Button, StyleSheet, View} from 'react-native';
+import {Button, StyleSheet, View, Text} from 'react-native';
+import {DataTable} from 'react-native-paper';
 import {
   aggregateRecord,
   getGrantedPermissions,
@@ -16,128 +17,118 @@ import {
   readRecord,
 } from 'react-native-health-connect';
 
+import {UserAuth} from '../../context/AuthContext';
+
 const getLastWeekDate = (): Date => {
   return new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
 };
 
-const getLastTwoWeeksDate = (): Date => {
-  return new Date(new Date().getTime() - 2 * 7 * 24 * 60 * 60 * 1000);
-};
 
 const getTodayDate = (): Date => {
   return new Date();
 };
 
-export default function Main() {
-  const initializeHealthConnect = async () => {
-    const result = await initialize();
-    console.log({result});
-  };
 
-  const checkAvailability = async () => {
-    const status = await getSdkStatus();
-    if (status === SdkAvailabilityStatus.SDK_AVAILABLE) {
-      console.log('SDK is available');
-    }
+// RestingHeartRateRecord(
+//   time: Instant,
+//   zoneOffset: ZoneOffset?,
+//   beatsPerMinute: Long,
+//   metadata: Metadata
+// )
 
-    if (status === SdkAvailabilityStatus.SDK_UNAVAILABLE) {
-      console.log('SDK is not available');
-    }
+type RestingHeartRateRecord = {
+  time: string;
+  beatsPerMinute: number;
+  id?: string;
+};
 
-    if (
-      status === SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED
-    ) {
-      console.log('SDK is not available, provider update required');
-    }
-  };
+export default function Record() {
+  const [hr, setHr] = React.useState(0);
+  const {userInfo, user, db} = UserAuth();
+  const [records, setRecords] = React.useState<RestingHeartRateRecord[]>([]);
 
-  const insertSampleData = () => {
-    insertRecords([
-      {
-        recordType: 'Steps',
-        count: 1000,
-        startTime: getLastWeekDate().toISOString(),
+  const getAllRecords = async () => {
+    const isInitialized = await initialize();
+    const grantedPermissions = await requestPermission([
+      { accessType: 'read', recordType: 'RestingHeartRate' },
+    ]);
+    console.log(`${isInitialized} ${grantedPermissions}`);
+
+    readRecords('RestingHeartRate', {
+      timeRangeFilter: {
+        operator: 'before',
         endTime: getTodayDate().toISOString(),
       },
+    }).then(result => {
+      console.log('Retrieved records: ', JSON.stringify({result}, null, 2));
+      let results = new Array<RestingHeartRateRecord>();
+      result.forEach(record => {
+        results.push({
+          time: record.time,
+          beatsPerMinute: record.beatsPerMinute,
+          id: record.metadata?.id,
+        });
+      });
+      setRecords(results);
+    });
+  };
+
+  // Use for testing only
+  // Create sample data of increasing resting hear rate per minute recorded from today
+  const insertNewSampleData = async () => {
+    const isInitialized = await initialize();
+    const grantedPermissions = await requestPermission([
+      { accessType: 'write', recordType: 'RestingHeartRate' },
+    ]);
+
+    const baseDate = getLastWeekDate();
+    insertRecords([
+      {
+        recordType: 'RestingHeartRate',
+        beatsPerMinute: 70,
+        time: baseDate.toISOString(),
+      },
+      {
+        recordType: 'RestingHeartRate',
+        beatsPerMinute: 100,
+        time: new Date(baseDate.getTime() + 60 * 1000).toISOString(),
+      },
+      {
+        recordType: 'RestingHeartRate',
+        beatsPerMinute: 120,
+        time: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(),
+      },
+      {
+        recordType: 'RestingHeartRate',
+        beatsPerMinute: 300,
+        time: new Date(baseDate.getTime() + 3 * 60 * 1000).toISOString(),
+      }
     ]).then(ids => {
       console.log('Records inserted ', {ids});
     });
   };
 
-  const readSampleData = () => {
-    readRecords('Steps', {
-      timeRangeFilter: {
-        operator: 'between',
-        startTime: getLastTwoWeeksDate().toISOString(),
-        endTime: getTodayDate().toISOString(),
-      },
-    }).then(result => {
-      console.log('Retrieved records: ', JSON.stringify({result}, null, 2));
-    });
-  };
-
-  const readSampleDataSingle = () => {
-    readRecord('Steps', 'a7bdea65-86ce-4eb2-a9ef-a87e6a7d9df2').then(result => {
-      console.log('Retrieved record: ', JSON.stringify({result}, null, 2));
-    });
-  };
-
-  const aggregateSampleData = () => {
-    aggregateRecord({
-      recordType: 'Steps',
-      timeRangeFilter: {
-        operator: 'between',
-        startTime: getLastWeekDate().toISOString(),
-        endTime: getTodayDate().toISOString(),
-      },
-    }).then(result => {
-      console.log('Aggregated record: ', {result});
-    });
-  };
-
-  const requestSamplePermissions = () => {
-    requestPermission([
-      {
-        accessType: 'read',
-        recordType: 'Steps',
-      },
-      {
-        accessType: 'write',
-        recordType: 'Steps',
-      },
-    ]).then(permissions => {
-      console.log('Granted permissions on request ', {permissions});
-    });
-  };
-
-  const grantedPermissions = () => {
-    getGrantedPermissions().then(permissions => {
-      console.log('Granted permissions ', {permissions});
-    });
-  };
-
   return (
     <View style={styles.container}>
-      <Button title="Initialize" onPress={initializeHealthConnect} />
-      <Button
-        title="Open Health Connect settings"
-        onPress={openHealthConnectSettings}
-      />
-      <Button
-        title="Open Health Connect data management"
-        onPress={() => openHealthConnectDataManagement()}
-      />
-      <Button title="Check availability" onPress={checkAvailability} />
-      <Button
-        title="Request sample permissions"
-        onPress={requestSamplePermissions}
-      />
-      <Button title="Get granted permissions" onPress={grantedPermissions} />
-      <Button title="Revoke all permissions" onPress={revokeAllPermissions} />
-      <Button title="Insert sample data" onPress={insertSampleData} />
-      <Button title="Read sample data" onPress={readSampleData} />
-      <Button title="Read specific data" onPress={readSampleDataSingle} />
-      <Button title="Aggregate sample data" onPress={aggregateSampleData} />
+      <Text>This is {userInfo.username}'s profile</Text>
+      <Text>This is my public key: {userInfo.usersea.pub}</Text>
+      <Button title="Get Records / Refresh Records" onPress={getAllRecords} />
+      <Button title="Insert Sample Data" onPress={insertNewSampleData} />
+
+        <DataTable style={styles.table}> 
+        <DataTable.Header style={styles.tableHeader}> 
+          <DataTable.Title style={{flex: 3}}>Time</DataTable.Title> 
+          <DataTable.Title>BPM</DataTable.Title> 
+        </DataTable.Header> 
+
+        {records.map((record, index) => (
+          <DataTable.Row key={index}>
+            <DataTable.Cell style={{flex: 3}}>{record.time}</DataTable.Cell>
+            <DataTable.Cell>{record.beatsPerMinute}</DataTable.Cell>
+          </DataTable.Row>
+        ))}
+     
+      </DataTable>
     </View>
   );
 }
@@ -148,10 +139,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     rowGap: 16,
+    margin: 20,
   },
   box: {
     width: 60,
     height: 60,
     marginVertical: 20,
   },
+  table : {
+    padding: 15,
+  },
+  tableHeader: { 
+    backgroundColor: '#DCDCDC', 
+  }, 
 });

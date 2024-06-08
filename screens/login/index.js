@@ -21,7 +21,7 @@ import 'gun/lib/radix.js';
 import 'gun/lib/radisk.js';
 import 'gun/lib/store.js';
 
-export const HomeScreen = ({navigation}) => {
+export const  HomeScreen = ({navigation}) => {
   const {signIn} = UserAuth();
 
   const insets = useSafeAreaInsets();
@@ -51,7 +51,7 @@ export const HomeScreen = ({navigation}) => {
     await signIn(username, password).then(success => {
       if (success) {
         setMessage('');
-        navigation.navigate('Profile');
+        navigation.navigate('Health Connect');
       } else {
         setIsError(true);
         setMessage('Invalid username or password');
@@ -151,6 +151,8 @@ export const HomeScreen = ({navigation}) => {
     </View>
   );
 };
+
+/*
 export const ProfileScreen = ({navigation}) => {
   const [hr, setHr] = React.useState(0);
   const {userInfo, user, db} = UserAuth();
@@ -173,7 +175,7 @@ export const ProfileScreen = ({navigation}) => {
     user.get('securimed').get('rx').get('hr').put(data);
   };
   return (
-    <>
+    <View>
       <Text>This is {userInfo.username}'s profile</Text>
       <Text>This is my public key: {userInfo.usersea.pub}</Text>
 
@@ -205,6 +207,7 @@ export const ProfileScreen = ({navigation}) => {
         title="Go to Jane's profile"
         onPress={() => navigation.navigate('Health Connect')}
       />
-    </>
+    </View>
   );
 };
+*/
