@@ -3,18 +3,10 @@ import * as React from 'react';
 import {Button, StyleSheet, View, Text, ScrollView} from 'react-native';
 import {DataTable} from 'react-native-paper';
 import {
-  aggregateRecord,
-  getGrantedPermissions,
   initialize,
   insertRecords,
-  getSdkStatus,
   readRecords,
   requestPermission,
-  revokeAllPermissions,
-  SdkAvailabilityStatus,
-  openHealthConnectSettings,
-  openHealthConnectDataManagement,
-  readRecord,
 } from 'react-native-health-connect';
 
 import {UserAuth} from '../../context/AuthContext';
@@ -54,7 +46,7 @@ export default function Record() {
     ]);
     console.log(`${isInitialized} ${grantedPermissions}`);
 
-    readRecords('RestingHeartRate', {
+    return readRecords('RestingHeartRate', {
       timeRangeFilter: {
         operator: 'before',
         endTime: getTodayDate().toISOString(),
@@ -70,6 +62,7 @@ export default function Record() {
         });
       });
       setRecords(results);
+      return results;
     });
   };
 
@@ -108,6 +101,30 @@ export default function Record() {
     });
   };
 
+  const syncToDatabase = async () => {
+    getAllRecords().then(() => {
+      records.forEach(record => {
+        // let data: {[key: string]: RestingHeartRateRecord} = {};
+        let data: {[key: string]: number} = {};
+        if (record.id){
+          // data[record.id] = {time: record.time, beatsPerMinute: record.beatsPerMinute};
+          data[record.time] = record.beatsPerMinute;
+          db.get('securimed')
+            .get('rx')
+            .get('hr')
+            .put(data);
+          console.log('Data synced to database', data);
+        }
+      });
+      // db.get('securimed')
+      //   .get('rx')
+      //   .get('hr')
+      //   .on((data: any) => {
+      //     console.log(data);
+      //   });
+    });
+  }
+
   React.useEffect(() => {
     getAllRecords();
   }, []);
@@ -116,8 +133,9 @@ export default function Record() {
     <View style={styles.container}>
       <Text>This is {userInfo.username}'s profile</Text>
       <Text>This is my public key: {userInfo.usersea.pub}</Text>
-      <Button title="Refresh Records" onPress={getAllRecords} />
       <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
+      <Button title="Refresh Records" onPress={getAllRecords} />
+      <Button title="Sync to Database" onPress={syncToDatabase} />
 
       <DataTable style={{flex: 1}}> 
         <DataTable.Header style={styles.tableHeader}> 
