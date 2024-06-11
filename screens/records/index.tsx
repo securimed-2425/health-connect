@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import {Button, StyleSheet, View, Text} from 'react-native';
+import {Button, StyleSheet, View, Text, ScrollView} from 'react-native';
 import {DataTable} from 'react-native-paper';
 import {
   aggregateRecord,
@@ -108,26 +108,31 @@ export default function Record() {
     });
   };
 
+  React.useEffect(() => {
+    getAllRecords();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Text>This is {userInfo.username}'s profile</Text>
       <Text>This is my public key: {userInfo.usersea.pub}</Text>
-      <Button title="Get Records / Refresh Records" onPress={getAllRecords} />
-      <Button title="Insert Sample Data" onPress={insertNewSampleData} />
+      <Button title="Refresh Records" onPress={getAllRecords} />
+      <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
 
-        <DataTable style={styles.table}> 
+      <DataTable style={{flex: 1}}> 
         <DataTable.Header style={styles.tableHeader}> 
           <DataTable.Title style={{flex: 3}}>Time</DataTable.Title> 
           <DataTable.Title>BPM</DataTable.Title> 
         </DataTable.Header> 
-
+        
+        <ScrollView>
         {records.map((record, index) => (
           <DataTable.Row key={index}>
             <DataTable.Cell style={{flex: 3}}>{record.time}</DataTable.Cell>
             <DataTable.Cell>{record.beatsPerMinute}</DataTable.Cell>
           </DataTable.Row>
         ))}
-     
+        </ScrollView>
       </DataTable>
     </View>
   );
@@ -137,7 +142,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
     rowGap: 16,
     margin: 20,
   },
