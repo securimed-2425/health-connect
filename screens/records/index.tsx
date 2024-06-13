@@ -22,17 +22,9 @@ const getTodayDate = (): Date => {
 };
 
 
-// RestingHeartRateRecord(
-//   time: Instant,
-//   zoneOffset: ZoneOffset?,
-//   beatsPerMinute: Long,
-//   metadata: Metadata
-// )
-
 type RestingHeartRateRecord = {
   time: number;
   beatsPerMinute: number;
-  id?: string;
 };
 
 export default function Record() {
@@ -43,11 +35,11 @@ export default function Record() {
   const getAllRecords = async (willAlert = true) => {
     const isInitialized = await initialize();
     const grantedPermissions = await requestPermission([
-      { accessType: 'read', recordType: 'RestingHeartRate' },
+      { accessType: 'read', recordType: 'HeartRate' },
     ]);
     console.log(`${isInitialized} ${grantedPermissions}`);
 
-    return readRecords('RestingHeartRate', {
+    return readRecords('HeartRate', {
       timeRangeFilter: {
         operator: 'before',
         endTime: getTodayDate().toISOString(),
@@ -56,10 +48,8 @@ export default function Record() {
       console.log('Retrieved records: ', JSON.stringify({result}, null, 2));
       let results = new Array<RestingHeartRateRecord>();
       result.forEach(record => {
-        results.push({
-          time: Date.parse(record.time),
-          beatsPerMinute: record.beatsPerMinute,
-          id: record.metadata?.id,
+        record.samples.forEach(sample => {
+          results.push({time: new Date(sample.time).getTime(), beatsPerMinute: sample.beatsPerMinute});
         });
       });
       setRecords(results);
@@ -74,30 +64,20 @@ export default function Record() {
   const insertNewSampleData = async () => {
     const isInitialized = await initialize();
     const grantedPermissions = await requestPermission([
-      { accessType: 'write', recordType: 'RestingHeartRate' },
+      { accessType: 'write', recordType: 'HeartRate' },
     ]);
 
     const baseDate = getLastWeekDate();
     insertRecords([
       {
-        recordType: 'RestingHeartRate',
-        beatsPerMinute: 70,
-        time: baseDate.toISOString(),
-      },
-      {
-        recordType: 'RestingHeartRate',
-        beatsPerMinute: 100,
-        time: new Date(baseDate.getTime() + 60 * 1000).toISOString(),
-      },
-      {
-        recordType: 'RestingHeartRate',
-        beatsPerMinute: 120,
-        time: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(),
-      },
-      {
-        recordType: 'RestingHeartRate',
-        beatsPerMinute: 300,
-        time: new Date(baseDate.getTime() + 3 * 60 * 1000).toISOString(),
+        recordType: 'HeartRate',
+        samples: [
+          {time: baseDate.toISOString(), beatsPerMinute: 70},
+          {time: new Date(baseDate.getTime() + 60 * 1000).toISOString(), beatsPerMinute: 100},
+          {time: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(), beatsPerMinute: 120},
+        ],
+        startTime: baseDate.toISOString(),
+        endTime: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(),
       }
     ]).then(ids => {
       console.log('Records inserted ', {ids});
@@ -108,10 +88,10 @@ export default function Record() {
   const deleteAllRecords = async () => {
     const isInitialized = await initialize();
     const grantedPermissions = await requestPermission([
-      { accessType: 'write', recordType: 'RestingHeartRate' },
+      { accessType: 'write', recordType: 'HeartRate' },
     ]);
 
-    deleteRecordsByTimeRange('RestingHeartRate', {
+    deleteRecordsByTimeRange('HeartRate', {
       operator: 'before',
       endTime: getTodayDate().toISOString(),
     })
@@ -122,27 +102,25 @@ export default function Record() {
   const syncToDatabase = async (willAlert = true) => {
     getAllRecords(false).then(() => {
       records.forEach(record => {
-        // let data: {[key: string]: RestingHeartRateRecord} = {};
         let data: {[key: string]: number} = {};
-        if (record.id){
-          // data[record.id] = {time: record.time, beatsPerMinute: record.beatsPerMinute};
-          data[record.time] = record.beatsPerMinute;
-          db.get('securimed')
-            .get('rx')
-            .get('test')
-            .put(data);
-          console.log('Data synced to database', data);
-        }
+        data[record.time] = record.beatsPerMinute;
+        db.get('securimed')
+          .get('rx')
+          .get('heartRate')
+          .put(data);
+        console.log('Data synced to database', data);
+        
       });
-      db.get('securimed')
-        .get('rx')
-        .get('test')
-        .on((data: any) => {
-          console.log(data);
-        });
       if (willAlert)
         Alert.alert('Sync to Database', 'Data synced to database');
     });
+
+    // db.get('securimed')
+    // .get('rx')
+    // .get('heartRate')
+    // .on((data: any) => {
+    //   console.log(data);
+    // });
   }
 
   React.useEffect(() => {
