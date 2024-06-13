@@ -7,6 +7,7 @@ import {
   insertRecords,
   readRecords,
   requestPermission,
+  deleteRecordsByTimeRange
 } from 'react-native-health-connect';
 
 import {UserAuth} from '../../context/AuthContext';
@@ -29,13 +30,12 @@ const getTodayDate = (): Date => {
 // )
 
 type RestingHeartRateRecord = {
-  time: string;
+  time: number;
   beatsPerMinute: number;
   id?: string;
 };
 
 export default function Record() {
-  const [hr, setHr] = React.useState(0);
   const {userInfo, user, db} = UserAuth();
   const [records, setRecords] = React.useState<RestingHeartRateRecord[]>([]);
 
@@ -56,7 +56,7 @@ export default function Record() {
       let results = new Array<RestingHeartRateRecord>();
       result.forEach(record => {
         results.push({
-          time: record.time,
+          time: Date.parse(record.time),
           beatsPerMinute: record.beatsPerMinute,
           id: record.metadata?.id,
         });
@@ -101,6 +101,19 @@ export default function Record() {
     });
   };
 
+  const deleteAllRecords = async () => {
+    const isInitialized = await initialize();
+    const grantedPermissions = await requestPermission([
+      { accessType: 'write', recordType: 'RestingHeartRate' },
+    ]);
+
+    deleteRecordsByTimeRange('RestingHeartRate', {
+      operator: 'before',
+      endTime: getTodayDate().toISOString(),
+    })
+    console.log('All records deleted');
+  }
+
   const syncToDatabase = async () => {
     getAllRecords().then(() => {
       records.forEach(record => {
@@ -116,12 +129,13 @@ export default function Record() {
           console.log('Data synced to database', data);
         }
       });
-      // db.get('securimed')
-      //   .get('rx')
-      //   .get('hr')
-      //   .on((data: any) => {
-      //     console.log(data);
-      //   });
+      db.get('securimed')
+        .get('rx')
+        .get('hr')
+        .on((data: any) => {
+          console.log(data);
+        });
+      
     });
   }
 
@@ -134,6 +148,7 @@ export default function Record() {
       <Text>This is {userInfo.username}'s profile</Text>
       <Text>This is my public key: {userInfo.usersea.pub}</Text>
       <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
+      <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
       <Button title="Refresh Records" onPress={getAllRecords} />
       <Button title="Sync to Database" onPress={syncToDatabase} />
 
