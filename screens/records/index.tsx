@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import {Button, StyleSheet, View, Text, ScrollView} from 'react-native';
+import {Button, StyleSheet, View, Text, ScrollView, Alert} from 'react-native';
 import {DataTable} from 'react-native-paper';
 import {
   initialize,
@@ -39,7 +39,7 @@ export default function Record() {
   const {userInfo, user, db} = UserAuth();
   const [records, setRecords] = React.useState<RestingHeartRateRecord[]>([]);
 
-  const getAllRecords = async () => {
+  const getAllRecords = async (willAlert = true) => {
     const isInitialized = await initialize();
     const grantedPermissions = await requestPermission([
       { accessType: 'read', recordType: 'RestingHeartRate' },
@@ -62,6 +62,8 @@ export default function Record() {
         });
       });
       setRecords(results);
+      if (willAlert)
+        Alert.alert('Refreshing records', `Retrieved ${results.length} records`);
       return results;
     });
   };
@@ -98,6 +100,7 @@ export default function Record() {
       }
     ]).then(ids => {
       console.log('Records inserted ', {ids});
+      Alert.alert('Insert Sample Data', `Inserted ${ids.length} records`);
     });
   };
 
@@ -112,10 +115,11 @@ export default function Record() {
       endTime: getTodayDate().toISOString(),
     })
     console.log('All records deleted');
+    Alert.alert('Delete All Records', 'All records deleted');
   }
 
   const syncToDatabase = async () => {
-    getAllRecords().then(() => {
+    getAllRecords(false).then(() => {
       records.forEach(record => {
         // let data: {[key: string]: RestingHeartRateRecord} = {};
         let data: {[key: string]: number} = {};
@@ -124,18 +128,18 @@ export default function Record() {
           data[record.time] = record.beatsPerMinute;
           db.get('securimed')
             .get('rx')
-            .get('hr')
+            .get('test')
             .put(data);
           console.log('Data synced to database', data);
         }
       });
       db.get('securimed')
         .get('rx')
-        .get('hr')
+        .get('test')
         .on((data: any) => {
           console.log(data);
         });
-      
+      Alert.alert('Sync to Database', 'Data synced to database');
     });
   }
 
@@ -149,19 +153,19 @@ export default function Record() {
       <Text>This is my public key: {userInfo.usersea.pub}</Text>
       <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
       <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
-      <Button title="Refresh Records" onPress={getAllRecords} />
+      <Button title="Refresh Records" onPress={() => {getAllRecords()}} />
       <Button title="Sync to Database" onPress={syncToDatabase} />
 
       <DataTable style={{flex: 1}}> 
         <DataTable.Header style={styles.tableHeader}> 
-          <DataTable.Title style={{flex: 3}}>Time</DataTable.Title> 
+          <DataTable.Title style={{flex: 4}}>Time</DataTable.Title> 
           <DataTable.Title>BPM</DataTable.Title> 
         </DataTable.Header> 
         
         <ScrollView>
         {records.map((record, index) => (
           <DataTable.Row key={index}>
-            <DataTable.Cell style={{flex: 3}}>{record.time}</DataTable.Cell>
+            <DataTable.Cell style={{flex: 4}}>{(new Date(record.time)).toUTCString()}</DataTable.Cell>
             <DataTable.Cell>{record.beatsPerMinute}</DataTable.Cell>
           </DataTable.Row>
         ))}
