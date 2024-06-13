@@ -119,7 +119,7 @@ export default function Record() {
     Alert.alert('Delete All Records', 'All records deleted');
   }
 
-  const syncToDatabase = async () => {
+  const syncToDatabase = async (willAlert = true) => {
     getAllRecords(false).then(() => {
       records.forEach(record => {
         // let data: {[key: string]: RestingHeartRateRecord} = {};
@@ -140,16 +140,22 @@ export default function Record() {
         .on((data: any) => {
           console.log(data);
         });
-      Alert.alert('Sync to Database', 'Data synced to database');
+      if (willAlert)
+        Alert.alert('Sync to Database', 'Data synced to database');
     });
   }
-  // Run getAllRecords() every 5 seconds
+
+  React.useEffect(() => {
+    syncToDatabase(false);
+  }, []);
+
+  // Run syncToDatabase every 60 seconds
   // only if isAutoSync is true
   React.useEffect(() => {
     if (isAutoSync) {
       const interval = setInterval(() => {
-        getAllRecords(false);
-      }, 5000);
+        syncToDatabase(false);
+      }, 60000);
       return () => clearInterval(interval);
     }
   }, [isAutoSync]);
@@ -161,7 +167,7 @@ export default function Record() {
       <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
       <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
       <Button title="Refresh Records" onPress={() => {getAllRecords()}} />
-      <Button title="Sync to Database" onPress={syncToDatabase} />
+      <Button title="Sync to Database" onPress={() => syncToDatabase()} />
       <View style={{flexDirection: 'row'}}>
         <Text>Auto Sync</Text>
         <Switch 
