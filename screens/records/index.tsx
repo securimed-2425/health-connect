@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import {Button, StyleSheet, View, Text, ScrollView, Alert} from 'react-native';
+import {Button, StyleSheet, View, Text, ScrollView, Alert, Switch} from 'react-native';
 import {DataTable} from 'react-native-paper';
 import {
   initialize,
@@ -38,6 +38,7 @@ type RestingHeartRateRecord = {
 export default function Record() {
   const {userInfo, user, db} = UserAuth();
   const [records, setRecords] = React.useState<RestingHeartRateRecord[]>([]);
+  const [isAutoSync, setIsAutoSync] = React.useState(false);
 
   const getAllRecords = async (willAlert = true) => {
     const isInitialized = await initialize();
@@ -142,20 +143,35 @@ export default function Record() {
       Alert.alert('Sync to Database', 'Data synced to database');
     });
   }
-
+  // Run getAllRecords() every 5 seconds
+  // only if isAutoSync is true
   React.useEffect(() => {
-    getAllRecords();
-  }, []);
+    if (isAutoSync) {
+      const interval = setInterval(() => {
+        getAllRecords(false);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [isAutoSync]);
 
   return (
     <View style={styles.container}>
-      <Text>This is {userInfo.username}'s profile</Text>
-      <Text>This is my public key: {userInfo.usersea.pub}</Text>
+      <Text style={{fontSize: 20, textAlign: 'left'}}> Username: {userInfo.username}</Text>
+      <Text>Public key: {userInfo.usersea.pub}</Text>
       <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
       <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
       <Button title="Refresh Records" onPress={() => {getAllRecords()}} />
       <Button title="Sync to Database" onPress={syncToDatabase} />
-
+      <View style={{flexDirection: 'row'}}>
+        <Text>Auto Sync</Text>
+        <Switch 
+          trackColor={{false: '#767577', true: '#81b0ff'}}
+          onValueChange={() => {
+            setIsAutoSync(prev => !prev)
+          }}
+          value={isAutoSync}
+      ></Switch>
+      </View>
       <DataTable style={{flex: 1}}> 
         <DataTable.Header style={styles.tableHeader}> 
           <DataTable.Title style={{flex: 4}}>Time</DataTable.Title> 
