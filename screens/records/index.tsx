@@ -12,6 +12,16 @@ import {
 
 import {UserAuth} from '../../context/AuthContext';
 
+import 'react-native-get-random-values';
+import 'gun/lib/mobile';
+import Gun from 'gun';
+import SEA from 'gun/sea';
+import 'react-native-webview-crypto';
+import 'react-native-get-random-values';
+import 'gun/lib/radix.js';
+import 'gun/lib/radisk.js';
+import 'gun/lib/store.js';
+
 const getLastWeekDate = (): Date => {
   return new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
 };
@@ -31,6 +41,10 @@ export default function Record() {
   const {userInfo, user, db} = UserAuth();
   const [records, setRecords] = React.useState<RestingHeartRateRecord[]>([]);
   const [isAutoSync, setIsAutoSync] = React.useState(false);
+
+  const isKeyInArray = (array : any[], key: any) => { 
+    return array.some(obj => obj.hasOwnProperty(key)); 
+  }
 
   const getAllRecords = async (willAlert = true) => {
     const isInitialized = await initialize();
@@ -73,8 +87,8 @@ export default function Record() {
         recordType: 'HeartRate',
         samples: [
           {time: baseDate.toISOString(), beatsPerMinute: 70},
-          {time: new Date(baseDate.getTime() + 60 * 1000).toISOString(), beatsPerMinute: 100},
-          {time: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(), beatsPerMinute: 120},
+          {time: new Date(baseDate.getTime() + 60 * 1000).toISOString(), beatsPerMinute: 75},
+          {time: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(), beatsPerMinute: 80},
         ],
         startTime: baseDate.toISOString(),
         endTime: new Date(baseDate.getTime() + 2 * 60 * 1000).toISOString(),
@@ -100,31 +114,29 @@ export default function Record() {
   }
 
   const syncToDatabase = async (willAlert = true) => {
+    if ( ! userInfo && ! userInfo.hrkeypair) {
+      console.log( 'No user info found' );
+      return;
+    }
     getAllRecords(false).then(() => {
-      records.forEach(record => {
-        let data: {[key: string]: number} = {};
-        data[record.time] = record.beatsPerMinute;
-        db.get('securimed')
-          .get('rx')
-          .get('heartRate')
-          .put(data);
-        console.log('Data synced to database', data);
-        
+      records.forEach( async (record) => {
+        let data: {[key: number]: string} = {};
+        const encrypted_bpm = await Gun.SEA.encrypt(record.beatsPerMinute, userInfo.hrkeypair);
+          data[record.time] = encrypted_bpm;
+          user.get('securimed')
+            .get('recs')
+            .get('testhr1')
+            .put(data);
+          console.log('Data synced to database', data);
       });
       if (willAlert)
         Alert.alert('Sync to Database', 'Data synced to database');
     });
-
-    // db.get('securimed')
-    // .get('rx')
-    // .get('heartRate')
-    // .on((data: any) => {
-    //   console.log(data);
-    // });
   }
 
   React.useEffect(() => {
     syncToDatabase(false);
+    console.log( 'UserInfo', userInfo );
   }, []);
 
   // Run syncToDatabase every 60 seconds
