@@ -124,8 +124,8 @@ export default function Record() {
         const encrypted_bpm = await Gun.SEA.encrypt(record.beatsPerMinute, userInfo.hrkeypair);
           data[record.time] = encrypted_bpm;
           user.get('securimed')
-            .get('recs')
-            .get('testhr1')
+            .get('rex')
+            .get('hr')
             .put(data);
           console.log('Data synced to database', data);
       });
