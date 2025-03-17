@@ -4,7 +4,6 @@ import {
   Pressable,
   Text,
   TextInput,
-  Button,
   Keyboard,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
@@ -21,7 +20,7 @@ import 'gun/lib/radix.js';
 import 'gun/lib/radisk.js';
 import 'gun/lib/store.js';
 
-export const  HomeScreen = ({navigation}) => {
+export const HomeScreen = ({navigation}) => {
   const {signIn} = UserAuth();
 
   const insets = useSafeAreaInsets();
@@ -58,27 +57,6 @@ export const  HomeScreen = ({navigation}) => {
       }
     });
   };
-
-  // const signUpHandler = async () => {
-  //   if (username === '' || password === '') {
-  //     setIsError(true);
-  //     setMessage('Please enter a username and password');
-  //     return;
-  //   }
-  //   await signUp(username, password).then(success => {
-  //     if (success) {
-  //       setIsError(false);
-  //       setMessage(
-  //         'Account created successfully. Please log in with your credentials.',
-  //       );
-  //       setPassword('');
-  //       setUsername('');
-  //     } else {
-  //       setIsError(true);
-  //       setMessage('Account creation failed. Username already exists.');
-  //     }
-  //   });
-  // };
 
   return (
     <View style={[insetStyles.safeArea, styles.container]}>
@@ -131,83 +109,9 @@ export const  HomeScreen = ({navigation}) => {
                 </View>
               )}
             </Pressable>
-            {/* <Pressable onPress={signUpHandler}>
-              {({pressed}) => (
-                <View
-                  style={[
-                    styles.button,
-                    pressed && styles.buttonPressed,
-                    !pressed && styles.buttonUnPressed,
-                  ]}>
-                  <Text style={pressed && styles.buttonTextPressed}>
-                    SIGN UP
-                  </Text>
-                </View>
-              )}
-            </Pressable> */}
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </View>
   );
 };
-
-/*
-export const ProfileScreen = ({navigation}) => {
-  const [hr, setHr] = React.useState(0);
-  const {userInfo, user, db} = UserAuth();
-  console.log(userInfo);
-
-  db.user(
-    'usVu30n-0tkA3GQVPbC6wXlVUXZnDlppaQudy1XV2C8.QO8-QkweUu-dF8a8-FNBt-s8GUlUCO0S_DkBJmkxQuA',
-  )
-    .get('securimed')
-    .get('rx')
-    .get('hr')
-    .on(data => {
-      console.log('data', data);
-    });
-
-  const add = () => {
-    const datetime = new Date().valueOf();
-    const data = {};
-    data[datetime] = hr;
-    user.get('securimed').get('rx').get('hr').put(data);
-  };
-  return (
-    <View>
-      <Text>This is {userInfo.username}'s profile</Text>
-      <Text>This is my public key: {userInfo.usersea.pub}</Text>
-
-      <View style={styles.inputContainer}>
-        <Text>Dummy HR</Text>
-        <TextInput
-          value={hr}
-          style={styles.input}
-          autoCorrect={false}
-          onChangeText={text => setHr(parseInt(text, 10))}
-          keyboardType="numeric"
-        />
-      </View>
-      <Pressable onPress={add}>
-        {({pressed}) => (
-          <View
-            style={[
-              styles.button,
-              pressed && styles.buttonPressed,
-              !pressed && styles.buttonUnPressed,
-            ]}>
-            <Text style={pressed && styles.buttonTextPressed}>
-              Add Dummy Data
-            </Text>
-          </View>
-        )}
-      </Pressable>
-      <Button
-        title="Go to Jane's profile"
-        onPress={() => navigation.navigate('Health Connect')}
-      />
-    </View>
-  );
-};
-*/
