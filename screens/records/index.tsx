@@ -1,13 +1,23 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 
-import {Button, StyleSheet, View, Text, ScrollView, Alert, Switch} from 'react-native';
+import {
+  Image,
+  Pressable,
+  Button,
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Alert,
+  Switch,
+} from 'react-native';
 import {DataTable} from 'react-native-paper';
 import {
   initialize,
   insertRecords,
   readRecords,
   requestPermission,
-  deleteRecordsByTimeRange
+  deleteRecordsByTimeRange,
 } from 'react-native-health-connect';
 
 import {UserAuth} from '../../context/AuthContext';
@@ -26,11 +36,9 @@ const getLastWeekDate = (): Date => {
   return new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
 };
 
-
 const getTodayDate = (): Date => {
   return new Date();
 };
-
 
 type RestingHeartRateRecord = {
   time: number;
@@ -150,9 +158,96 @@ export default function Record() {
     }
   }, [isAutoSync]);
 
+  const [activeTab, setActiveTab] = useState('Tab1');
+
+  const getTabButtonStyle = (isActive: boolean) => ({
+    ...styles.tabButton,
+    backgroundColor: isActive ? '#3882f4' : '#eeeeee',
+  });
+
+  const getTabTextStyle = (isActive: boolean) => ({
+    color: isActive ? 'white' : '#707070',
+  });
+
   return (
     <View style={styles.container}>
-      <Text style={{fontSize: 20, textAlign: 'left'}}> Username: {userInfo.username}</Text>
+      <View style={[styles.header, styles.margin]}>
+        <View style={styles.profile}>
+          <Image
+            source={require('../../assets/favicon.png')}
+            style={styles.profileImage}
+          />
+          <View>
+            <Text style={[styles.textGray, styles.leadingTight]}>
+              Good Morning
+            </Text>
+            <Text style={styles.textBlack}>{userInfo.username}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.bpmDisplay}>
+        <DataTable style={{flex: 1}}>
+          <DataTable.Header style={styles.tableHeader}>
+            <DataTable.Title
+              style={{flex: 4, marginVertical: -8}}
+              textStyle={{color: '#212020'}}>
+              Time
+            </DataTable.Title>
+            <DataTable.Title style={{marginVertical: -8}}>BPM</DataTable.Title>
+          </DataTable.Header>
+          <ScrollView>
+            {records.map((record, index) => (
+              <DataTable.Row key={index}>
+                <DataTable.Cell style={{flex: 4}}>
+                  {new Date(record.time).toUTCString()}
+                </DataTable.Cell>
+                <DataTable.Cell>{record.beatsPerMinute}</DataTable.Cell>
+              </DataTable.Row>
+            ))}
+          </ScrollView>
+        </DataTable>
+      </View>
+
+      <View style={styles.margin}>
+        {/* Tab Buttons */}
+        <View style={styles.tabButtons}>
+          <Pressable
+            onPress={() => setActiveTab('Tab1')}
+            style={StyleSheet.flatten([
+              styles.tabButton,
+              getTabButtonStyle(activeTab === 'Tab1'),
+            ])}>
+            <Text style={getTabTextStyle(activeTab === 'Tab1')}>Trustors</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setActiveTab('Tab2')}
+            style={StyleSheet.flatten([
+              styles.tabButton,
+              getTabButtonStyle(activeTab === 'Tab2'),
+            ])}>
+            <Text style={getTabTextStyle(activeTab === 'Tab2')}>Trustees</Text>
+          </Pressable>
+        </View>
+
+        {/* Tab Content */}
+        <View style={styles.friendCard}>
+          {activeTab === 'Tab1' ? (
+            <View style={styles.profile}>
+              <View style={[styles.friendImage, {backgroundColor: 'white'}]} />
+              <View style={styles.whiteCard}>
+                <Text style={[styles.textBlue, styles.leadingTight]}>
+                  Lance Raphael Bassig
+                </Text>
+                <Text style={styles.textBlack}>Friend</Text>
+              </View>
+            </View>
+          ) : (
+            <Text>Content for Tab 2</Text>
+          )}
+        </View>
+      </View>
+
       <Text>Public key: {userInfo.usersea.pub}</Text>
       <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
       <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
@@ -160,29 +255,14 @@ export default function Record() {
       <Button title="Sync to Database" onPress={() => syncToDatabase()} />
       <View style={{flexDirection: 'row'}}>
         <Text>Auto Sync</Text>
-        <Switch 
+        <Switch
           trackColor={{false: '#767577', true: '#81b0ff'}}
           onValueChange={() => {
-            setIsAutoSync(prev => !prev)
+            setIsAutoSync(prev => !prev);
           }}
           value={isAutoSync}
-      ></Switch>
+        />
       </View>
-      <DataTable style={{flex: 1}}> 
-        <DataTable.Header style={styles.tableHeader}> 
-          <DataTable.Title style={{flex: 4}}>Time</DataTable.Title> 
-          <DataTable.Title>BPM</DataTable.Title> 
-        </DataTable.Header> 
-        
-        <ScrollView>
-        {records.map((record, index) => (
-          <DataTable.Row key={index}>
-            <DataTable.Cell style={{flex: 4}}>{(new Date(record.time)).toUTCString()}</DataTable.Cell>
-            <DataTable.Cell>{record.beatsPerMinute}</DataTable.Cell>
-          </DataTable.Row>
-        ))}
-        </ScrollView>
-      </DataTable>
     </View>
   );
 }
@@ -190,19 +270,84 @@ export default function Record() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    rowGap: 16,
+    backgroundColor: '#F3F2F8',
+  },
+  bpmDisplay: {
+    backgroundColor: 'white',
+    height: 400,
+  },
+  margin: {
     margin: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  profile: {
+    flexDirection: 'row',
+    columnGap: 10,
+    alignItems: 'center',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+  },
+  tabButtons: {
+    flexDirection: 'row',
+    columnGap: 5,
+    marginBottom: 10,
+  },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  friendCard: {
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#c3dafc',
+    borderRadius: 20,
+  },
+  friendImage: {
+    width: 55,
+    height: 55,
+    borderRadius: 50,
+  },
+  whiteCard: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    backgroundColor: 'white',
+    borderRadius: 15,
+  },
+  leadingTight: {
+    marginBottom: -1,
+  },
+  textBlue: {
+    color: '#3882f4',
+  },
+  textBlack: {
+    color: '#212020',
+    fontSize: 16,
+    fontWeight: 'semibold',
+  },
+  textGray: {
+    color: '#828181',
   },
   box: {
     width: 60,
     height: 60,
     marginVertical: 20,
   },
-  table : {
+  table: {
     padding: 15,
   },
-  tableHeader: { 
-    backgroundColor: '#DCDCDC', 
-  }, 
+  tableHeader: {
+    backgroundColor: '#EDEDEF',
+    borderRadius: 10,
+    margin: 10,
+  },
 });
