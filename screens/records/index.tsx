@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
+import {DataTable} from 'react-native-paper';
+import {LineChart} from 'react-native-chart-kit';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import {
   Image,
@@ -10,8 +13,9 @@ import {
   ScrollView,
   Alert,
   Switch,
+  Dimensions,
 } from 'react-native';
-import {DataTable} from 'react-native-paper';
+
 import {
   initialize,
   insertRecords,
@@ -31,6 +35,33 @@ import 'react-native-get-random-values';
 import 'gun/lib/radix.js';
 import 'gun/lib/radisk.js';
 import 'gun/lib/store.js';
+
+const samplerecords = [
+  {time: '2025-03-27T08:00:00Z', beatsPerMinute: 75},
+  {time: '2025-03-27T09:00:00Z', beatsPerMinute: 80},
+  {time: '2025-03-27T10:00:00Z', beatsPerMinute: 78},
+  {time: '2025-03-27T11:00:00Z', beatsPerMinute: 85},
+  {time: '2025-03-27T12:00:00Z', beatsPerMinute: 82},
+];
+
+// Helper function to format the records into chart-friendly data
+const formatChartData = (records) => {
+  const labels = records.map((record) =>
+    new Date(record.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+  );
+
+  const bpmData = records.map((record) => record.beatsPerMinute);
+
+  return {
+    labels,
+    datasets: [
+      {
+        data: bpmData,
+        strokeWidth: 2,
+      },
+    ],
+  };
+};
 
 const getLastWeekDate = (): Date => {
   return new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -169,44 +200,73 @@ export default function Record() {
     color: isActive ? 'white' : '#707070',
   });
 
+  const chartData = formatChartData(records);
+
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={[styles.header, styles.margin]}>
-        <View style={styles.profile}>
-          <Image
-            source={require('../../assets/favicon.png')}
-            style={styles.profileImage}
-          />
-          <View>
-            <Text style={[styles.textGray, styles.leadingTight]}>
-              Good Morning
-            </Text>
-            <Text style={styles.textBlack}>{userInfo.username}</Text>
-          </View>
-        </View>
+        <Text style={[styles.textBlack, {fontWeight: 'bold', fontSize: 30, color: '#3882f4'}]}>SecuriMed</Text>
+        <Icon name="qr-code" size={30} color="#3882f4" />
       </View>
 
-      <View style={styles.bpmDisplay}>
-        <DataTable style={{flex: 1}}>
-          <DataTable.Header style={styles.tableHeader}>
-            <DataTable.Title
-              style={{flex: 4, marginVertical: -8}}
-              textStyle={{color: '#212020'}}>
-              Time
-            </DataTable.Title>
-            <DataTable.Title style={{marginVertical: -8}}>BPM</DataTable.Title>
-          </DataTable.Header>
-          <ScrollView>
-            {records.map((record, index) => (
-              <DataTable.Row key={index}>
-                <DataTable.Cell style={{flex: 4}}>
-                  {new Date(record.time).toUTCString()}
-                </DataTable.Cell>
-                <DataTable.Cell>{record.beatsPerMinute}</DataTable.Cell>
-              </DataTable.Row>
-            ))}
-          </ScrollView>
-        </DataTable>
+      {/* Search Bar */}
+      <View style={[styles.margin, {backgroundColor: '#eeeeee', color: '#707070', borderRadius: 20, padding: 13}]}>
+        <Text>Search</Text>
+      </View>
+
+      {/* BPM Graph */}
+      <View style={styles.graphContainer}>
+
+        <View style={{flexDirection: 'row', columnGap: 10}}>
+          <View style={{backgroundColor: 'white', borderRadius: 20, paddingVertical: 18, paddingLeft: 13, paddingRight: 23, flexDirection: 'row', columnGap: 8}}>
+            <View>
+              <Text
+                style={[styles.textBlack, {fontWeight: 500, marginBottom: -2}]}>
+                {userInfo.username}'s
+              </Text>
+              <Text
+                style={[styles.textBlack, {fontSize: 25, fontWeight: 'bold'}]}>
+                Heart Rate
+              </Text>
+            </View>
+          </View>
+
+          <View style={{backgroundColor: '#3882f4', borderRadius: 20, padding: 13}}>
+            <Text style={{color: 'white', fontWeight: 500, marginBottom: -9}}>Latest</Text>
+            <View style={{flexDirection: 'row', columnGap: 5, alignItems: 'flex-end'}}>
+              <Text style={{color: 'white', fontSize: 40 , fontWeight: 500, marginBottom: -5}}>54</Text>
+              <Text style={{color: 'white', fontSize: 16}}>BPM</Text>
+            </View>
+          </View>
+        </View>
+
+        {0 === 0 ? (
+          <LineChart
+            data={formatChartData(samplerecords)}
+            width={Dimensions.get('window').width - 23}
+            height={250}
+            yAxisLabel=""
+            yAxisSuffix=" BPM"
+            chartConfig={{
+              backgroundColor: '#ffffff',
+              backgroundGradientFrom: '#ffffff',
+              backgroundGradientTo: '#ffffff',
+              decimalPlaces: 0,
+              color: (opacity = 1) => `rgba(34, 139, 230, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              propsForDots: {
+                r: '4',
+                strokeWidth: '2',
+                stroke: '#3882f4',
+              },
+            }}
+            bezier
+            style={styles.chart}
+          />
+        ) : (
+          <Text>No data available</Text>
+        )}
       </View>
 
       <View style={styles.margin}>
@@ -270,14 +330,28 @@ export default function Record() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F2F8',
+    backgroundColor: 'white',
   },
   bpmDisplay: {
-    backgroundColor: 'white',
+    backgroundColor: '#EFF4FF',
     height: 400,
   },
+  graphContainer: {
+    backgroundColor: '#C3DAFC',
+    padding: 12,
+    rowGap: 12,
+  },
+  graphTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#212020',
+    marginBottom: 10,
+  },
+  chart: {
+    borderRadius: 20,
+  },
   margin: {
-    margin: 20,
+    margin: 12,
   },
   header: {
     flexDirection: 'row',
@@ -331,8 +405,6 @@ const styles = StyleSheet.create({
   },
   textBlack: {
     color: '#212020',
-    fontSize: 16,
-    fontWeight: 'semibold',
   },
   textGray: {
     color: '#828181',
@@ -344,10 +416,5 @@ const styles = StyleSheet.create({
   },
   table: {
     padding: 15,
-  },
-  tableHeader: {
-    backgroundColor: '#EDEDEF',
-    borderRadius: 10,
-    margin: 10,
   },
 });
