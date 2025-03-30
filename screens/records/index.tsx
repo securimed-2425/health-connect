@@ -37,26 +37,44 @@ import 'gun/lib/radisk.js';
 import 'gun/lib/store.js';
 
 const samplerecords = [
-  {time: '2025-03-27T08:00:00Z', beatsPerMinute: 75},
-  {time: '2025-03-27T09:00:00Z', beatsPerMinute: 80},
-  {time: '2025-03-27T10:00:00Z', beatsPerMinute: 78},
-  {time: '2025-03-27T11:00:00Z', beatsPerMinute: 85},
-  {time: '2025-03-27T12:00:00Z', beatsPerMinute: 82},
+  {time: '2025-03-27T08:00:00Z', beatsPerMinute: 75}, // 8 AM
+  {time: '2025-03-27T09:00:00Z', beatsPerMinute: 80}, // 9 AM
+  {time: '2025-03-27T10:00:00Z', beatsPerMinute: 78}, // 10 AM
+  {time: '2025-03-27T11:00:00Z', beatsPerMinute: 85}, // 11 AM
+  {time: '2025-03-27T12:03:00Z', beatsPerMinute: 82}, // 12:03 PM
+  {time: '2025-03-27T00:00:00Z', beatsPerMinute: 65}, // 12 AM
+  {time: '2025-03-27T07:00:00Z', beatsPerMinute: 70}, // 7 AM
+  {time: '2025-03-27T12:00:00Z', beatsPerMinute: 75}, // 12 PM
+  {time: '2025-03-27T19:00:00Z', beatsPerMinute: 80}, // 7 PM
 ];
 
-// Helper function to format the records into chart-friendly data
-const formatChartData = (records) => {
-  const labels = records.map((record) =>
-    new Date(record.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
-  );
+const xAxisLabels = ['12 AM', '6 AM', '12 PM', '6 PM', '12 AM'];
 
-  const bpmData = records.map((record) => record.beatsPerMinute);
+// Map time to normalized x-position (0 to 24 range)
+const mapTimeToX = (time: string | number | Date) => {
+  const date = new Date(time);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  return hours + minutes / 60; // 0 → 24 range
+};
+
+// Format chart data with proper x-axis alignment
+const formatChartData = (records: any[]) => {
+  const totalHours = 24; // Range of 24 hours for the entire day
+  const dataPoints = new Array(totalHours * 4).fill(null); // Higher resolution
+
+  // Map each record to its precise x-position
+  records.forEach(record => {
+    const xPos = mapTimeToX(record.time);
+    const index = Math.floor((xPos / totalHours) * dataPoints.length); // Scaled index
+    dataPoints[index] = record.beatsPerMinute;
+  });
 
   return {
-    labels,
+    labels: xAxisLabels, // Fixed labels
     datasets: [
       {
-        data: bpmData,
+        data: dataPoints.map(value => value ?? null), // Fill null gaps
         strokeWidth: 2,
       },
     ],
@@ -189,63 +207,36 @@ export default function Record() {
     }
   }, [isAutoSync]);
 
-  const [activeTab, setActiveTab] = useState('Tab1');
-
-  const getTabButtonStyle = (isActive: boolean) => ({
-    ...styles.tabButton,
-    backgroundColor: isActive ? '#3882f4' : '#eeeeee',
-  });
-
-  const getTabTextStyle = (isActive: boolean) => ({
-    color: isActive ? 'white' : '#707070',
-  });
-
-  const chartData = formatChartData(records);
-
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, styles.margin]}>
-        <Text style={[styles.textBlack, {fontWeight: 'bold', fontSize: 30, color: '#3882f4'}]}>SecuriMed</Text>
-        <Icon name="qr-code" size={30} color="#3882f4" />
+      <View style={styles.header}>
+        <Text style={[styles.textBlack, {fontWeight: '800', fontSize: 33, color: '#3882f4'}]}>SecuriMed</Text>
+        <Icon name="qr-code" size={33} color="#3882f4" />
       </View>
 
       {/* Search Bar */}
-      <View style={[styles.margin, {backgroundColor: '#eeeeee', color: '#707070', borderRadius: 20, padding: 13}]}>
-        <Text>Search</Text>
+      <View style={styles.searchBar}>
+        <Icon name="search" size={20} />
+        <Text style={{fontSize: 17}}>Search</Text>
       </View>
 
-      {/* BPM Graph */}
-      <View style={styles.graphContainer}>
-
-        <View style={{flexDirection: 'row', columnGap: 10}}>
-          <View style={{backgroundColor: 'white', borderRadius: 20, paddingVertical: 18, paddingLeft: 13, paddingRight: 23, flexDirection: 'row', columnGap: 8}}>
-            <View>
-              <Text
-                style={[styles.textBlack, {fontWeight: 500, marginBottom: -2}]}>
-                {userInfo.username}'s
-              </Text>
-              <Text
-                style={[styles.textBlack, {fontSize: 25, fontWeight: 'bold'}]}>
-                Heart Rate
-              </Text>
-            </View>
-          </View>
-
-          <View style={{backgroundColor: '#3882f4', borderRadius: 20, padding: 13}}>
-            <Text style={{color: 'white', fontWeight: 500, marginBottom: -9}}>Latest</Text>
-            <View style={{flexDirection: 'row', columnGap: 5, alignItems: 'flex-end'}}>
-              <Text style={{color: 'white', fontSize: 40 , fontWeight: 500, marginBottom: -5}}>54</Text>
-              <Text style={{color: 'white', fontSize: 16}}>BPM</Text>
-            </View>
-          </View>
+      {/* Heart Rate */}
+      <View style={[styles.headingMargins, styles.headingWithMore]}>
+        <Text style={styles.headingText}>Heart Rate</Text>
+        <View style={{flexDirection: 'row', columnGap: 4, alignItems: 'center'}}>
+          <Icon name="share" size={14} color="#3882f4"/>
+          <Text style={{fontSize: 16, color: '#3882f4'}}>Share</Text>
         </View>
+      </View>
+
+      <View style={styles.whiteCard}>
 
         {0 === 0 ? (
           <LineChart
             data={formatChartData(samplerecords)}
-            width={Dimensions.get('window').width - 23}
-            height={250}
+            width={Dimensions.get('window').width - 40}
+            height={280}
             yAxisLabel=""
             yAxisSuffix=" BPM"
             chartConfig={{
@@ -253,59 +244,26 @@ export default function Record() {
               backgroundGradientFrom: '#ffffff',
               backgroundGradientTo: '#ffffff',
               decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(34, 139, 230, ${opacity})`,
+              color: (opacity = 0) => `rgba(34, 139, 230, ${opacity})`,
               labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               propsForDots: {
                 r: '4',
-                strokeWidth: '2',
-                stroke: '#3882f4',
               },
             }}
             bezier
-            style={styles.chart}
+            style={{marginLeft: -11, marginTop: 10}}
           />
         ) : (
           <Text>No data available</Text>
         )}
-      </View>
 
-      <View style={styles.margin}>
-        {/* Tab Buttons */}
-        <View style={styles.tabButtons}>
-          <Pressable
-            onPress={() => setActiveTab('Tab1')}
-            style={StyleSheet.flatten([
-              styles.tabButton,
-              getTabButtonStyle(activeTab === 'Tab1'),
-            ])}>
-            <Text style={getTabTextStyle(activeTab === 'Tab1')}>Trustors</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setActiveTab('Tab2')}
-            style={StyleSheet.flatten([
-              styles.tabButton,
-              getTabButtonStyle(activeTab === 'Tab2'),
-            ])}>
-            <Text style={getTabTextStyle(activeTab === 'Tab2')}>Trustees</Text>
-          </Pressable>
-        </View>
-
-        {/* Tab Content */}
-        <View style={styles.friendCard}>
-          {activeTab === 'Tab1' ? (
-            <View style={styles.profile}>
-              <View style={[styles.friendImage, {backgroundColor: 'white'}]} />
-              <View style={styles.whiteCard}>
-                <Text style={[styles.textBlue, styles.leadingTight]}>
-                  Lance Raphael Bassig
-                </Text>
-                <Text style={styles.textBlack}>Friend</Text>
-              </View>
-            </View>
-          ) : (
-            <Text>Content for Tab 2</Text>
-          )}
-        </View>
+        <View
+          style={{
+            width: '100%',
+            borderBottomWidth: 0.2,
+            borderBottomColor: '#929292',
+          }}
+        />
       </View>
 
       <Text>Public key: {userInfo.usersea.pub}</Text>
@@ -330,91 +288,49 @@ export default function Record() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
-  },
-  bpmDisplay: {
-    backgroundColor: '#EFF4FF',
-    height: 400,
-  },
-  graphContainer: {
-    backgroundColor: '#C3DAFC',
+    backgroundColor: '#f2f1f6',
     padding: 12,
-    rowGap: 12,
-  },
-  graphTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#212020',
-    marginBottom: 10,
-  },
-  chart: {
-    borderRadius: 20,
-  },
-  margin: {
-    margin: 12,
+    rowGap: 18,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: -9,
   },
-  profile: {
+  searchBar: {
+    flexDirection: 'row', 
+    columnGap: 4, 
+    alignItems: 'center', 
+    backgroundColor: '#E4E3E9', 
+    color: '#929292', 
+    borderRadius: 24, 
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+
+  headingMargins: {
+    marginTop: 6,
+    marginBottom: -12,
+    marginLeft: 3,
+    marginRight: 4,
+  },
+  headingWithMore: {
     flexDirection: 'row',
-    columnGap: 10,
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
-  profileImage: {
-    width: 40,
-    height: 40,
+  headingText: {
+    color: '#040404',
+    fontSize: 23, 
+    fontWeight: 'bold',
   },
-  tabButtons: {
-    flexDirection: 'row',
-    columnGap: 5,
-    marginBottom: 10,
-  },
-  tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  friendCard: {
-    alignItems: 'center',
-    padding: 8,
-    backgroundColor: '#c3dafc',
-    borderRadius: 20,
-  },
-  friendImage: {
-    width: 55,
-    height: 55,
-    borderRadius: 50,
-  },
+
   whiteCard: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    backgroundColor: 'white',
-    borderRadius: 15,
-  },
-  leadingTight: {
-    marginBottom: -1,
-  },
-  textBlue: {
-    color: '#3882f4',
-  },
-  textBlack: {
-    color: '#212020',
-  },
-  textGray: {
-    color: '#828181',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-  table: {
+    backgroundColor: 'white', 
+    borderRadius: 10, 
     padding: 15,
+    width: '100%',
+    overflow: 'hidden',
   },
 });
