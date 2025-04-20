@@ -1,28 +1,46 @@
-import React, {useEffect} from 'react';
-import {Alert, StyleSheet} from 'react-native';
-import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import {useScanBarcodes, BarcodeFormat} from 'vision-camera-code-scanner';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Camera, useCameraDevices } from 'react-native-vision-camera';
+import { useScanBarcodes, BarcodeFormat } from 'vision-camera-code-scanner';
 
-export default function QRScanner({ navigation }) {
+const QRScanner = () => {
+  const navigation = useNavigation();
+  const [hasPermission, setHasPermission] = useState(false);
+
   const devices = useCameraDevices();
   const device = devices.back;
 
-  const [frameProcessor, barcodes] = useScanBarcodes(
-    [BarcodeFormat.QR_CODE],
-    { checkInverted: true }
-  );
+  const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE]);
+
+  useEffect(() => {
+    (async () => {
+      const status = await Camera.requestCameraPermission();
+      setHasPermission(status === 'authorized');
+    })();
+  }, []);
 
   useEffect(() => {
     if (barcodes.length > 0) {
-      const code = barcodes[0]?.rawValue;
+      const code = barcodes[0].displayValue;
       if (code) {
-        Alert.alert('QR Code Detected', code);
-        navigation.goBack(); // Go back after scanning
+        Alert.alert('QR Code Scanned', `Scanned: ${code}`, [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]);
       }
     }
   }, [barcodes]);
 
-  if (!device) return null;
+  if (device == null || !hasPermission) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.text}>Waiting for camera permissions...</Text>
+      </View>
+    );
+  }
 
   return (
     <Camera
@@ -33,4 +51,19 @@ export default function QRScanner({ navigation }) {
       frameProcessorFps={5}
     />
   );
-}
+};
+
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  text: {
+    color: '#333',
+    fontSize: 18,
+  },
+});
+
+export default QRScanner;
