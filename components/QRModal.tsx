@@ -52,8 +52,9 @@ const QRModal = ({visible, onClose, userInfo, styles}: QRModalProps) => {
             <QRCode value={userInfo.usersea.pub} size={220} color="#1E88E5" />
           </View>
           <Text style={{ textAlign: 'center' }}>
-            When you share your QR code with someone, they will be able to see
-            your username & heart rate data.
+            When you share your QR code with someone, the person will become
+            your caregiver and will be able to see your username and heart rate
+            data.
           </Text>
           <Text style={{ color: '#1E88E5' }}>Reset QR Code</Text>
         </View>
