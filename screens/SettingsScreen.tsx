@@ -55,14 +55,16 @@ const SettingsScreen = () => {
     Alert.alert('Change Password', 'Redirect to change password screen (TBD)');
   };
 
+  //****** FRONTEND START ******//
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerText}>Settings</Text>
+          <Text style={styles.title}>Settings</Text>
           <TouchableOpacity onPress={handleOpenQR}>
-            <Icon name="qr-code" size={32} color="#234859" />
+            <Icon name="qr-code" size={32} />
           </TouchableOpacity>
         </View>
 
@@ -113,7 +115,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
   content: {
-    padding: 16,
+    flex: 1,
+    padding: 12,
     rowGap: 16,
   },
   header: {
@@ -121,7 +124,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  headerText: {
+  title: {
     fontWeight: 'bold',
     fontSize: 25,
     color: '#234859',

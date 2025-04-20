@@ -44,9 +44,8 @@ const QRModal = ({visible, onClose, userInfo, styles}: QRModalProps) => {
             <QRCode value={userInfo.usersea.pub} size={220} color="#1E88E5" />
           </View>
           <Text style={localStyles.description}>
-            When you share your QR code with someone, the person will become
-            your caregiver and will be able to see your username and heart rate
-            data.
+            When you share your QR code with someone, they’ll be added to your
+            list of caregivers and will be able to view your heart rate data.
           </Text>
           <Text style={localStyles.resetText}>Reset QR Code</Text>
         </View>

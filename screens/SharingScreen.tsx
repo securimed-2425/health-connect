@@ -116,13 +116,13 @@ const SharingScreen = () => {
             ))}
             <TouchableOpacity style={styles.card}>
               <Icon name="person-add-alt" size={20} style={{ marginRight: 9 }} />
-              <Text style={styles.addText}>Add another caregiver</Text>
+              <Text style={styles.addText}>Add to your caregiver</Text>
             </TouchableOpacity>
           </View>
 
           {/* People You Support */}
           <View>
-            <Text style={styles.sectionLabel}>People You Support</Text>
+            <Text style={styles.sectionLabel}>People You Care For</Text>
             {filteredSupported.map((person, idx) => (
               <React.Fragment key={idx}>
                 <SupportedCard
@@ -138,7 +138,7 @@ const SharingScreen = () => {
             ))}
             <TouchableOpacity style={styles.card}>
               <Icon name="person-add-alt" size={20} style={{ marginRight: 9 }} />
-              <Text style={styles.addText}>Add another person</Text>
+              <Text style={styles.addText}>Add someone to your care</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
