@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   ScrollView,
   SafeAreaView,
@@ -11,30 +11,46 @@ import {
   Pressable,
 } from 'react-native';
 
-import { UserAuth } from '../context/AuthContext';
+import {UserAuth} from '../context/AuthContext';
+import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import QRModal from '../components/QRModal';
 
 const SettingsScreen = () => {
+  // QR Code Logic
   const [qrVisible, setQrVisible] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-
-  const { userInfo, logout } = UserAuth();
-
   const handleOpenQR = () => setQrVisible(true);
   const handleCloseQR = () => setQrVisible(false);
 
+  // Toggle Dark Mode Logic
+  const {darkMode, toggleDarkMode} = UserAuth();
+
+  // Logout Logic
+  const navigation = useNavigation();
+  const {userInfo, logOut} = UserAuth();
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', style: 'destructive', onPress: logout },
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => {
+          logOut();
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Login'}],
+          });
+        },
+      },
     ]);
   };
 
+  // Help Logic
   const handleHelp = () => {
     Alert.alert('Help', 'You can contact support@example.com for help.');
   };
 
+  // Change Password Logic
   const handleChangePassword = () => {
     Alert.alert('Change Password', 'Redirect to change password screen (TBD)');
   };
@@ -55,12 +71,14 @@ const SettingsScreen = () => {
           <Text style={styles.settingText}>Dark Mode</Text>
           <Switch
             value={darkMode}
-            onValueChange={setDarkMode}
+            onValueChange={toggleDarkMode}
             thumbColor={darkMode ? '#1E88E5' : '#ccc'}
           />
         </View>
 
-        <TouchableOpacity style={styles.settingItem} onPress={handleChangePassword}>
+        <TouchableOpacity
+          style={styles.settingItem}
+          onPress={handleChangePassword}>
           <Text style={styles.settingText}>Change Password / PIN</Text>
           <Icon name="lock" size={24} color="#234859" />
         </TouchableOpacity>
@@ -71,18 +89,20 @@ const SettingsScreen = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
-          <Text style={[styles.settingText, { color: '#D32F2F' }]}>Logout</Text>
+          <Text style={[styles.settingText, {color: '#D32F2F'}]}>Logout</Text>
           <Icon name="logout" size={24} color="#D32F2F" />
         </TouchableOpacity>
       </ScrollView>
 
       {/* QR Modal */}
-      <QRModal
-        visible={qrVisible}
-        onClose={handleCloseQR}
-        userInfo={userInfo}
-        styles={styles}
-      />
+      {userInfo && (
+        <QRModal
+          visible={qrVisible}
+          onClose={handleCloseQR}
+          userInfo={userInfo}
+          styles={styles}
+        />
+      )}
     </SafeAreaView>
   );
 };

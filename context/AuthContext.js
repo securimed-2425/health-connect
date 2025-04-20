@@ -1,4 +1,10 @@
-import React, {useRef, createContext, useContext, useState, useEffect} from 'react';
+import React, {
+  useRef,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from 'react';
 
 import 'react-native-get-random-values';
 import 'gun/lib/mobile';
@@ -30,6 +36,9 @@ export const AuthContextProvider = ({children}) => {
   const [userInfo, setUserInfo] = useState(null);
   const [count, setCount] = useState(0);
   const [retrieved, setRetrieved] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => setDarkMode(prev => !prev);
 
   const signIn = async (username, password) => {
     return new Promise((resolve, reject) => {
@@ -44,7 +53,10 @@ export const AuthContextProvider = ({children}) => {
     });
   };
 
-  const logOut = () => {};
+  const logOut = () => {
+    user.leave(); // log the user out from Gun
+    setUserInfo(null); // clear user info in app state
+  };
 
   db.on('auth', async () => {
     const alias = user._.put.alias;
@@ -55,48 +67,53 @@ export const AuthContextProvider = ({children}) => {
       usersea: user._.sea,
     });
 
-    await user.get( 'securimed' ).get( 'scmroom' ).get( 'hr' ).then( async data => {
-      
-      if ( !data ) {
-        console.log( 'no keypair' );
-        setCount( count + 1 );
-      } else {
-        const keypair = await Gun.SEA.decrypt(data, user._.sea);
-        console.log('keypair', keypair);
-        setUserInfo({
-          username: alias || '',
-          usersea: user._.sea,
-          hrkeypair: keypair
-        });
-        setRetrieved( true );
-      }
-    });
-
-    
-  });
-
-  useEffect(() => {
-    const getKeyPair = async () => {
-      await user.get( 'securimed' ).get( 'scmroom' ).get( 'hr' ).then( async data => {
-        if ( !data ) {
-          console.log( 'no keypair' );
-          setCount( count + 1 );
+    await user
+      .get('securimed')
+      .get('scmroom')
+      .get('hr')
+      .then(async data => {
+        if (!data) {
+          console.log('no keypair');
+          setCount(count + 1);
         } else {
           const keypair = await Gun.SEA.decrypt(data, user._.sea);
           console.log('keypair', keypair);
           setUserInfo({
             username: alias || '',
             usersea: user._.sea,
-            hrkeypair: keypair
+            hrkeypair: keypair,
           });
-          setRetrieved( true );
+          setRetrieved(true);
         }
       });
-    }
-    if ( count !== 0 && !retrieved ) {
+  });
+
+  useEffect(() => {
+    const getKeyPair = async () => {
+      await user
+        .get('securimed')
+        .get('scmroom')
+        .get('hr')
+        .then(async data => {
+          if (!data) {
+            console.log('no keypair');
+            setCount(count + 1);
+          } else {
+            const keypair = await Gun.SEA.decrypt(data, user._.sea);
+            console.log('keypair', keypair);
+            setUserInfo({
+              username: alias || '',
+              usersea: user._.sea,
+              hrkeypair: keypair,
+            });
+            setRetrieved(true);
+          }
+        });
+    };
+    if (count !== 0 && !retrieved) {
       getKeyPair();
     }
-  }, [count]);
+  }, [count, retrieved, user]);
 
   //   const signUp = async (username, password) => {
   //     return new Promise((resolve, reject) => {
@@ -112,7 +129,16 @@ export const AuthContextProvider = ({children}) => {
   //   };
 
   return (
-    <AuthContext.Provider value={{signIn, logOut, userInfo, user, db}}>
+    <AuthContext.Provider
+      value={{
+        signIn,
+        logOut,
+        userInfo,
+        user,
+        db,
+        darkMode,
+        toggleDarkMode,
+      }}>
       {children}
     </AuthContext.Provider>
   );

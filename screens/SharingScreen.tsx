@@ -73,12 +73,14 @@ const SharingScreen = () => {
         </View>
 
         {/* Modals */}
-        <QRModal
-          visible={qrVisible}
-          onClose={handleCloseQR}
-          userInfo={userInfo}
-          styles={styles}
-        />
+        {userInfo && (
+          <QRModal
+            visible={qrVisible}
+            onClose={handleCloseQR}
+            userInfo={userInfo}
+            styles={styles}
+          />
+        )}
 
         <CaregiverModal
           visible={caregiverModalVisible}

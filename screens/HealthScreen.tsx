@@ -212,12 +212,14 @@ const HealthScreen = () => {
             </TouchableOpacity>
           </View>
 
-          <QRModal
-            visible={qrVisible}
-            onClose={handleCloseQR}
-            userInfo={userInfo}
-            styles={styles}
-          />
+          {userInfo && (
+            <QRModal
+              visible={qrVisible}
+              onClose={handleCloseQR}
+              userInfo={userInfo}
+              styles={styles}
+            />
+          )}
 
           {/* Heart Rate */}
           <View>
