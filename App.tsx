@@ -3,6 +3,7 @@ import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {LoginScreen} from './screens/login/index';
+import QRScanner from './components/QRScanner';
 import Record from './screens/records/index';
 import {AuthContextProvider} from './context/AuthContext';
 
@@ -42,6 +43,7 @@ const App = () => {
                 component={Record}
                 options={{headerShown: false}}
               />
+              <Stack.Screen name="QRScanner" component={QRScanner} />
             </Stack.Navigator>
           </NavigationContainer>
         </PaperProvider>
