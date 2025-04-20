@@ -1,11 +1,8 @@
 import * as React from 'react';
-import { BottomNavigation, Text} from 'react-native-paper';
-
+import {BottomNavigation} from 'react-native-paper';
 import HealthScreen from '../screens/HealthScreen';
-
-const SharingRoute = () => <Text>owo</Text>;
-
-const SettingsRoute = () => <Text>hihi</Text>;
+import SharingScreen from '../screens/SharingScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const BottomNav = () => {
   const [index, setIndex] = React.useState(0);
@@ -18,7 +15,7 @@ const BottomNav = () => {
     },
     {
       key: 'sharing',
-      title: 'Sharing',
+      title: 'Care Circle',
       focusedIcon: 'account-supervisor',
       unfocusedIcon: 'account-supervisor-outline',
     },
@@ -32,15 +29,25 @@ const BottomNav = () => {
 
   const renderScene = BottomNavigation.SceneMap({
     health: HealthScreen,
-    sharing: SharingRoute,
-    settings: SettingsRoute,
+    sharing: SharingScreen,
+    settings: SettingsScreen,
   });
 
   return (
     <BottomNavigation
-      navigationState={{ index, routes }}
+      navigationState={{index, routes}}
       onIndexChange={setIndex}
       renderScene={renderScene}
+      barStyle={{
+        backgroundColor: '#FFFFFF',
+      }}
+      activeColor="#1E88E5"
+      inactiveColor="#9E9E9E"
+      theme={{
+        colors: {
+          secondaryContainer: 'transparent',
+        },
+      }}
     />
   );
 };

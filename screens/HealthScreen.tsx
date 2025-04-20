@@ -1,15 +1,20 @@
-import React from 'react';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import React, { useState } from 'react';
 import {
+  ScrollView,
+  RefreshControl,
   SafeAreaView,
   View,
+  Image,
   Text,
   StyleSheet,
   Alert,
   Button,
-  Switch,
+  TouchableOpacity,
 } from 'react-native';
+
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import HeartRateGraph from '../components/HeartRateGraph';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {
   initialize,
@@ -24,12 +29,14 @@ import {UserAuth} from '../context/AuthContext';
 import 'react-native-get-random-values';
 import 'gun/lib/mobile';
 import Gun from 'gun';
-import SEA from 'gun/sea';
 import 'react-native-webview-crypto';
 import 'react-native-get-random-values';
 import 'gun/lib/radix.js';
 import 'gun/lib/radisk.js';
 import 'gun/lib/store.js';
+
+import Favicon from '../assets/favicon.png';
+import QRModal from '../components/QRModal';
 
 const getLastWeekDate = (): Date => {
   return new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -45,6 +52,12 @@ type RestingHeartRateRecord = {
 };
 
 const HealthScreen = () => {
+  const [qrVisible, setQrVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  const handleOpenQR = () => setQrVisible(true);
+  const handleCloseQR = () => setQrVisible(false);
+
   const {userInfo, user, db} = UserAuth();
   const [records, setRecords] = React.useState<RestingHeartRateRecord[]>([]);
   const [isAutoSync, setIsAutoSync] = React.useState(false);
@@ -84,6 +97,14 @@ const HealthScreen = () => {
         );
       return results;
     });
+  };
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await getAllRecords(); // your existing record-fetching function
+    setRefreshing(false);
   };
   
   // Use for testing only
@@ -165,59 +186,69 @@ const HealthScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={{fontWeight: '800', fontSize: 33, color: '#3882f4'}}>
-            SecuriMed
-          </Text>
-          <Icon name="qr-code" size={33} color="#3882f4" />
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchBar}>
-          <Icon name="search" size={20} />
-          <Text style={{fontSize: 17}}>Search</Text>
-        </View>
-
-        {/* Heart Rate */}
-        <View style={[styles.headingMargins, styles.headingWithMore]}>
-          <Text style={styles.headingText}>Heart Rate</Text>
-          <View style={{flexDirection: 'row', columnGap: 4, alignItems: 'center'}}>
-            <Icon name="share" size={14} color="#3882f4"/>
-            <Text style={{fontSize: 16, color: '#3882f4'}}>Share</Text>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#1E88E5']}
+          />
+        }>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={Favicon}
+                style={{ width: 30, height: 30, marginRight: 8 }}
+                resizeMode="contain"
+              />
+              <Text style={{ fontWeight: 'bold', fontSize: 25, color: '#234859' }}>
+                SecuriMed
+              </Text>
+            </View>
+            <TouchableOpacity onPress={handleOpenQR}>
+              <Icon name="qr-code" size={32} />
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <View style={styles.whiteCard}>
-
-          <HeartRateGraph/>
-
-          <View
-            style={{
-              width: '100%',
-              borderBottomWidth: 0.2,
-              borderBottomColor: '#929292',
-            }}
+          <QRModal
+            visible={qrVisible}
+            onClose={handleCloseQR}
+            userInfo={userInfo}
+            styles={styles}
           />
-        </View>
 
-        <Text>Public key: {userInfo.usersea.pub}</Text>
-        <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
-        <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
-        <Button title="Refresh Records" onPress={() => {getAllRecords()}} />
-        <Button title="Sync to Database" onPress={() => syncToDatabase()} />
-        <View style={{flexDirection: 'row'}}>
-          <Text>Auto Sync</Text>
-          <Switch
-            trackColor={{false: '#767577', true: '#81b0ff'}}
-            onValueChange={() => {
-              setIsAutoSync(prev => !prev);
-            }}
-            value={isAutoSync}
-          />
+          {/* Heart Rate */}
+          <View>
+            <Text style={styles.sectionLabel}>Heart Rate</Text>
+            <View style={styles.whiteCard}>
+              <HeartRateGraph />
+              <View
+                style={{
+                  width: '100%',
+                  borderBottomWidth: 0.2,
+                  borderBottomColor: '#929292',
+                }}
+              />
+            </View>
+          </View>
+
+          <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
+          <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
+          {/* <Button title="Sync to Database" onPress={() => syncToDatabase()} />
+          <View style={{flexDirection: 'row'}}>
+            <Text>Auto Sync</Text>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              onValueChange={() => {
+                setIsAutoSync(prev => !prev);
+              }}
+              value={isAutoSync}
+            />
+          </View> */}
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -225,7 +256,7 @@ const HealthScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f2f1f6',
+    backgroundColor: '#FAFAFA',
   },
   content: {
     flex: 1,
@@ -236,19 +267,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: -9,
   },
-  searchBar: {
-    flexDirection: 'row',
-    columnGap: 4,
-    alignItems: 'center',
-    backgroundColor: '#E4E3E9',
-    color: '#929292',
-    borderRadius: 24,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+  qrContainer: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 16,
+    alignSelf: 'center',
+    elevation: 2,
   },
-
+  sectionLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#234859',
+    marginBottom: 8,
+  },
   headingMargins: {
     marginTop: 6,
     marginBottom: -10,
@@ -261,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   headingText: {
-    color: '#040404',
+    color: '#234859',
     fontSize: 23,
     fontWeight: 'bold',
   },

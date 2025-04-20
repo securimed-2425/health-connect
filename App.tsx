@@ -1,7 +1,8 @@
 import * as React from 'react';
+import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {HomeScreen} from './screens/login/index';
+import {LoginScreen} from './screens/login/index';
 import Record from './screens/records/index';
 import {AuthContextProvider} from './context/AuthContext';
 
@@ -11,25 +12,39 @@ import 'gun/lib/mobile';
 
 const Stack = createNativeStackNavigator();
 
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#1E88E5',
+    accent: '#90CAF9',
+    background: '#FFFFFF',
+    text: '#0D47A1',
+    error: '#D32F2F',
+  },
+};
+
 const App = () => {
   return (
     <>
       <AuthContextProvider>
         <PolyfillCrypto />
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              options={{headerShown: false}}
-            />
-            <Stack.Screen
-              name="Health Connect"
-              component={Record}
-              options={{headerShown: false}}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <PaperProvider theme={theme}>
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{headerShown: false}}
+              />
+              <Stack.Screen
+                name="Health Connect"
+                component={Record}
+                options={{headerShown: false}}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </PaperProvider>
       </AuthContextProvider>
     </>
   );

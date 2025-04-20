@@ -1,117 +1,163 @@
 import React from 'react';
 import {
   View,
-  Pressable,
-  Text,
-  TextInput,
   Keyboard,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Image,
 } from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {StyleSheet} from 'react-native';
-import {styles} from './styles';
+import {TextInput, Button, Text, Card, Title} from 'react-native-paper';
 import {UserAuth} from '../../context/AuthContext';
-import 'react-native-get-random-values';
-import 'gun/lib/mobile';
-import 'gun/sea';
-import 'gun/lib/radix.js';
-import 'gun/lib/radisk.js';
-import 'gun/lib/store.js';
 
-export const HomeScreen = ({navigation}) => {
+export const LoginScreen = ({navigation}) => {
   const {signIn} = UserAuth();
-
   const insets = useSafeAreaInsets();
-
-  const insetStyles = StyleSheet.create({
-    safeArea: {
-      paddingTop: insets.top,
-      paddingBottom: insets.bottom,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-    },
-  });
 
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [isError, setIsError] = React.useState(true);
+  const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
+  const [isError, setIsError] = React.useState(false);
   const [message, setMessage] = React.useState('');
 
   const loginHandler = async () => {
-    if (username === '' || password === '') {
+    if (!username || !password) {
       setIsError(true);
       setMessage('Please enter a username and password');
       return;
     }
 
-    // signUp(username, password);
-    await signIn(username, password).then(success => {
-      if (success) {
-        setMessage('');
-        navigation.navigate('Health Connect');
-      } else {
-        setIsError(true);
-        setMessage('Invalid username or password');
-      }
-    });
+    const success = await signIn(username, password);
+    if (success) {
+      setIsError(false);
+      setMessage('');
+      navigation.navigate('Health Connect');
+    } else {
+      setIsError(true);
+      setMessage('Invalid username or password');
+    }
   };
 
   return (
-    <View style={[insetStyles.safeArea, styles.container]}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View>
-            <View style={styles.inputContainer}>
-              <Text>Username</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left + 16,
+            paddingRight: insets.right + 16,
+          },
+        ]}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <Card style={styles.card} elevation={1}>
+            <Card.Content>
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require('../../assets/favicon.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+
+              <Title style={styles.title}>Welcome to SecuriMed</Title>
+
               <TextInput
+                label="Username"
                 value={username}
-                style={styles.input}
+                onChangeText={setUsername}
+                mode="outlined"
                 autoCapitalize="none"
                 autoCorrect={false}
-                onChangeText={text => setUsername(text)}
+                style={styles.input}
               />
-            </View>
-            <View style={styles.inputContainer}>
-              <Text>Password</Text>
+
               <TextInput
+                label="Password"
                 value={password}
+                onChangeText={setPassword}
+                mode="outlined"
+                secureTextEntry={!isPasswordVisible}
                 style={styles.input}
-                autoCapitalize="none"
-                autoCorrect={false}
-                onChangeText={text => setPassword(text)}
-                secureTextEntry={true}
+                right={
+                  <TextInput.Icon
+                    icon={isPasswordVisible ? 'eye-off' : 'eye'}
+                    onPress={() => setIsPasswordVisible(prev => !prev)}
+                  />
+                }
               />
-            </View>
-            {message.length === 0 ? (
-              <></>
-            ) : (
-              <Text
-                style={[
-                  styles.textMessage,
-                  isError ? styles.textError : styles.textSuccess,
-                ]}>
-                {message}
-              </Text>
-            )}
-            <View style={styles.spacer} />
-            <Pressable onPress={loginHandler}>
-              {({pressed}) => (
-                <View
+
+              {message.length > 0 && (
+                <Text
                   style={[
-                    styles.button,
-                    pressed && styles.buttonPressed,
-                    !pressed && styles.buttonUnPressed,
+                    styles.message,
+                    isError ? styles.errorText : styles.successText,
                   ]}>
-                  <Text style={pressed && styles.buttonTextPressed}>LOGIN</Text>
-                </View>
+                  {message}
+                </Text>
               )}
-            </Pressable>
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </View>
+
+              <Button
+                mode="contained"
+                onPress={loginHandler}
+                style={styles.button}
+                contentStyle={{paddingVertical: 8}}>
+                Login
+              </Button>
+            </Card.Content>
+          </Card>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+    justifyContent: 'center',
+  },
+  card: {
+    borderRadius: 12,
+    paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  logo: {
+    width: 72,
+    height: 72,
+  },
+  title: {
+    textAlign: 'center',
+    fontSize: 24,
+    marginBottom: 16,
+    fontWeight: 'bold',
+    color: '#2B4C6F',
+  },
+  input: {
+    marginBottom: 12,
+  },
+  message: {
+    textAlign: 'center',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  errorText: {
+    color: '#D32F2F',
+  },
+  successText: {
+    color: '#388E3C',
+  },
+  button: {
+    marginTop: 12,
+    borderRadius: 8,
+  },
+});
