@@ -20,6 +20,8 @@ import QRModal from '../components/QRModal';
 import SearchBar from '../components/SearchBar';
 import CaregiverCard from '../components/CaregiverCard';
 import SupportedCard from '../components/SupportedCard';
+import CaregiverModal from '../components/CaregiverModal';
+import SupportedModal from '../components/SupportedModal';
 
 const SharingScreen = () => {
   const [qrVisible, setQrVisible] = useState(false);
@@ -70,7 +72,7 @@ const SharingScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* QR Modal */}
+        {/* Modals */}
         <QRModal
           visible={qrVisible}
           onClose={handleCloseQR}
@@ -78,58 +80,17 @@ const SharingScreen = () => {
           styles={styles}
         />
 
-        {/* Placeholder Caregiver Modal */}
-        <Modal
+        <CaregiverModal
           visible={caregiverModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setCaregiverModalVisible(false)}
-        >
-          <View style={{
-            flex: 1,
-            backgroundColor: 'white',
-            padding: 24,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            {selectedCaregiver && (
-              <>
-                <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{selectedCaregiver.name}</Text>
-                <Text>Access: {selectedCaregiver.access}</Text>
-                <Pressable onPress={() => setCaregiverModalVisible(false)} style={{ marginTop: 20 }}>
-                  <Text style={{ color: 'blue' }}>Close</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        </Modal>
+          caregiver={selectedCaregiver}
+          onClose={() => setCaregiverModalVisible(false)}
+        />
 
-        {/* Placeholder Supported Modal */}
-        <Modal
+        <SupportedModal
           visible={supportedModalVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setSupportedModalVisible(false)}
-        >
-          <View style={{
-            flex: 1,
-            backgroundColor: 'white',
-            padding: 24,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            {selectedSupported && (
-              <>
-                <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{selectedSupported.name}</Text>
-                <Text>Alerts: {selectedSupported.alerts}</Text>
-                <Text>Last updated: {selectedSupported.lastUpdated}</Text>
-                <Pressable onPress={() => setSupportedModalVisible(false)} style={{ marginTop: 20 }}>
-                  <Text style={{ color: 'blue' }}>Close</Text>
-                </Pressable>
-              </>
-            )}
-          </View>
-        </Modal>
+          person={selectedSupported}
+          onClose={() => setSupportedModalVisible(false)}
+        />
 
         {/* Search Bar */}
         <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
