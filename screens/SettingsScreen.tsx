@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   ScrollView,
   SafeAreaView,
@@ -24,7 +24,7 @@ const SettingsScreen = () => {
   const handleCloseQR = () => setQrVisible(false);
 
   // Toggle Dark Mode Logic
-  const { isDark, toggleTheme } = useContext(ThemeContext);
+  const {isDark, toggleTheme} = useContext(ThemeContext);
 
   // Logout Logic
   const navigation = useNavigation();
