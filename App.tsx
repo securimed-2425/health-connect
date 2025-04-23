@@ -13,7 +13,6 @@ import {ThemeProvider, ThemeContext} from './context/ThemeContext';
 import {AuthContextProvider} from './context/AuthContext';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {LoginScreen} from './screens/login/index';
-import QRScanner from './components/QRScanner';
 import Record from './screens/records/index';
 
 import PolyfillCrypto from 'react-native-webview-crypto';
@@ -43,7 +42,6 @@ const App = () => {
                 component={Record}
                 options={{headerShown: false}}
               />
-              <Stack.Screen name="QRScanner" component={QRScanner} />
             </Stack.Navigator>
           </NavigationContainer>
         </PaperProvider>

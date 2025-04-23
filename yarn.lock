@@ -6926,7 +6926,7 @@ react-native-qrcode-svg@^6.3.15:
     qrcode "^1.5.4"
     text-encoding "^0.7.0"
 
-react-native-reanimated@*, react-native-reanimated@^3.17.4:
+react-native-reanimated@*:
   version "3.17.4"
   resolved "https://registry.npmjs.org/react-native-reanimated/-/react-native-reanimated-3.17.4.tgz"
   integrity sha512-vmkG/N5KZrexHr4v0rZB7ohPVseGVNaCXjGxoRo+NYKgC9+mIZAkg/QIfy9xxfJ73FfTrryO9iYUrxks3ZfKbA==
@@ -6974,7 +6974,7 @@ react-native-vector-icons@*, react-native-vector-icons@^10.2.0:
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
-react-native-vision-camera@^4.6.4, react-native-vision-camera@>=2.9.4:
+react-native-vision-camera@^4.6.4:
   version "4.6.4"
   resolved "https://registry.npmjs.org/react-native-vision-camera/-/react-native-vision-camera-4.6.4.tgz"
   integrity sha512-d998uTHsGJ9bTlsClgT37RK1sK7ZQekv5y6ylynds3vmdK6YbFQJUoi2cvMrFN4dp9qvSlCjEfwekjMIz3guQA==
@@ -8214,11 +8214,6 @@ vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
-
-vision-camera-code-scanner@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.npmjs.org/vision-camera-code-scanner/-/vision-camera-code-scanner-0.2.0.tgz"
-  integrity sha512-H5hVkXfbIcGdg9YlhuS8Y/xDX5e32Vo6eK5FyDQsE9AGVjlqEHMmSLHZg7BX8UUm4ADmiAZc8wzc4n8TUqGr0g==
 
 vlq@^1.0.0:
   version "1.0.1"

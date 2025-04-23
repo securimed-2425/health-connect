@@ -32,7 +32,7 @@ const QRModal = ({visible, onClose, userInfo, styles}: QRModalProps) => {
             <Icon name="close" size={28} color="#234859" />
           </Pressable>
           <Text style={localStyles.title}>Your QR Code</Text>
-          <Pressable onPress={() => navigation.navigate('QRScanner')}>
+          <Pressable>
             <Icon name="qrcode-scan" size={28} color="#234859" />
           </Pressable>
         </View>
