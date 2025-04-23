@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import {UserAuth} from '../context/AuthContext';
+import {ThemeContext} from '../context/ThemeContext';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import QRModal from '../components/QRModal';
@@ -23,7 +24,7 @@ const SettingsScreen = () => {
   const handleCloseQR = () => setQrVisible(false);
 
   // Toggle Dark Mode Logic
-  const {darkMode, toggleDarkMode} = UserAuth();
+  const { isDark, toggleTheme } = useContext(ThemeContext);
 
   // Logout Logic
   const navigation = useNavigation();
@@ -72,9 +73,9 @@ const SettingsScreen = () => {
         <View style={styles.settingItem}>
           <Text style={styles.settingText}>Dark Mode</Text>
           <Switch
-            value={darkMode}
-            onValueChange={toggleDarkMode}
-            thumbColor={darkMode ? '#1E88E5' : '#ccc'}
+            value={isDark}
+            onValueChange={toggleTheme}
+            thumbColor={isDark ? '#1E88E5' : '#ccc'}
           />
         </View>
 
