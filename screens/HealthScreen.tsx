@@ -10,6 +10,7 @@ import {
   Alert,
   Button,
   TouchableOpacity,
+  Switch,
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -238,7 +239,7 @@ const HealthScreen = () => {
 
           <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
           <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
-          {/* <Button title="Sync to Database" onPress={() => syncToDatabase()} />
+          <Button title="Sync to Database" onPress={() => syncToDatabase()} />
           <View style={{flexDirection: 'row'}}>
             <Text>Auto Sync</Text>
             <Switch
@@ -248,7 +249,7 @@ const HealthScreen = () => {
               }}
               value={isAutoSync}
             />
-          </View> */}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
