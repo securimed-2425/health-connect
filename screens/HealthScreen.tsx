@@ -234,13 +234,16 @@ const HealthScreen = () => {
                   borderBottomColor: '#929292',
                 }}
               />
+              <Button
+                title="Add Heart Rate Data"
+                onPress={insertNewSampleData}
+              />
             </View>
           </View>
 
-          <Button title="Insert Sample Data (For Testing Only)" onPress={insertNewSampleData} />
-          <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />
-          <Button title="Sync to Database" onPress={() => syncToDatabase()} />
-          <View style={{flexDirection: 'row'}}>
+          {/* <Button title="Delete All Records (For Testing Only)" onPress={deleteAllRecords} />  
+          <Button title="Sync to Database" onPress={() => syncToDatabase()} /> */}
+          <View style={{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
             <Text>Auto Sync</Text>
             <Switch
               trackColor={{false: '#767577', true: '#81b0ff'}}
@@ -299,6 +302,10 @@ const styles = StyleSheet.create({
     color: '#234859',
     fontSize: 23,
     fontWeight: 'bold',
+  },
+  buttonText: {
+    color: '#234859',
+    fontSize: 14,
   },
 
   whiteCard: {

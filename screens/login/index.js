@@ -159,5 +159,6 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 12,
     borderRadius: 8,
+    backgroundColor: '#1E88E5',
   },
 });
