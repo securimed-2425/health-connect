@@ -1,5 +1,15 @@
 # SecuriMed: Health Connect Mobile App
-This is a mobile application for synchronizing health data from health connect to the GUN.js database. 
+
+**Group Members:** Clarisse Bianca Bucu, Lance Raphael Bassig, Luis Patrick Dupalco
+
+This mobile application is designed to synchronize health data from Android's **Health Connect** into a **GUN.js** decentralized database. It is part of the SecuriMed project, which explores decentralized solutions for healthcare data sharing and monitoring.
+
+## ⚠️ Branch Information
+
+The actively maintained and working branch is `new-ui`.  
+The `main` branch is currently broken due to outdated dependencies and requires a React Native version upgrade.
+
+---
 
 ### Instruction for running in a virtual device (Tested using Pixel_3a_API_34_extension_level_7_x86_64 with Android Version 14)
 1. Download and install [Android Studio](https://developer.android.com/studio)
